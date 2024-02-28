@@ -227,7 +227,7 @@ function adquirir() {
 function cambiarColorBoton(objeto) {
     switch (objeto) {
         case "Disponible":
-            return { backgroundColor: "black" };
+            return { backgroundColor: "beige", color: "black" };
         case "Reservado":
             return { backgroundColor: "red" };
         case "Comprado":
