@@ -288,7 +288,7 @@ function cambiarColorBoton(objeto) {
         </div>
         <main>
             <section id="informacion">
-                <h2>INFORMACIÓN</h2>
+                <h2 style="color: white">INFORMACIÓN</h2>
                 <div id="infoContenido">
                     <p>
                         🏆<span>{{ mostrarInformacion == true ? premio : "" }}</span>
@@ -311,7 +311,7 @@ function cambiarColorBoton(objeto) {
                     {{ e.i < 10 ? "0" + e.i : e.i }} </button>
             </section>
             <section id="accion">
-                <h2>ACCIONES</h2>
+                <h2 style="color: white">ACCIONES</h2>
                 <div id="accContenido">
                     <button id="estadoB">ESTADO</button>
                     <button>LISTAR BOLETAS</button>
