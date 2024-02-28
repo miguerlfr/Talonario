@@ -343,7 +343,7 @@ function cambiarColorBoton(objeto) {
                 <button @click="adquirir()">ADQUIRIR</button>
             </section>
             <section id="formulario" v-if="mostrarFormulario == true">
-                <h2>CONFIGURA TU TALONARIO</h2>
+                <h2 style="color: white">CONFIGURA TU TALONARIO</h2>
                 <div id="forContenido">
                     <input type="text" placeholder="Premio" v-model="premio" />
                     <input type="text" placeholder="Valor Boleta" v-model="precioBoleta" />
