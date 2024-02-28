@@ -91,11 +91,13 @@ function generarLoteria() {
             text: "¡Gracias por usar este Talonario!",
             icon: "success",
         });
-        for (let i = 0; i < 100; i++) {
+        if(boletas.value.length == 0) {
+          for (let i = 0; i < 100; i++) {
             boletas.value.push({
                 i,
                 estado: "Disponible",
             });
+        }
         }
         mostrarFormulario.value = false;
 
