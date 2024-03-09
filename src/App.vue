@@ -1092,7 +1092,7 @@ main {
     background-color: #fff;
     color: black;
     width: 18rem;
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 50%;
     transform: translate(-50%);
