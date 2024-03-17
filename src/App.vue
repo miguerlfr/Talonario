@@ -7,7 +7,7 @@ import autoTable from "jspdf-autotable";
 jsPDF.autotable = autoTable;
 
 // Personalizacion de colores
-let colorFondo = ref("#ffffff");
+let colorFondo = ref("#9CDDDC");
 let ColorBdisponible = ref("#F5F5DC");
 let colorPagina = ref("#3498db");
 
@@ -546,6 +546,7 @@ const agruparBoletasCompradas = () => {
                 </h2>
                 <section>
                     <article>
+                        <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
                         <svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
                             stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
                             <path
@@ -562,7 +563,7 @@ const agruparBoletasCompradas = () => {
                                 :fill="colorFondo" />
                         </svg>
                         <div>
-                            <p>Color Fondo</p>
+                            <p>Color fondo</p>
                             <input type="color" v-model="colorFondo" />
                         </div>
                     </article>
