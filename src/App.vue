@@ -52,8 +52,12 @@ let pagarCliente = ref("");
 
 // Item del cliente
 let participante = ref(null);
-
+    
 // Funciones Lógicas
+function formatearNumero(numero) {
+    return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 function editar() {
     mostrarFormulario.value = true;
     mostrarBoletas.value = false;
@@ -449,10 +453,10 @@ const agruparBoletasCompradas = () => {
                 <h2 style="color: white">INFORMACIÓN</h2>
                 <div id="infoContenido">
                     <p>
-                        🏆<span>{{ mostrarBoletas == true ? premio : "" }}</span>
+                        🏆<span>{{ mostrarBoletas == true ? formatearNumero(premio) : '' }}</span>
                     </p>
                     <p>
-                        💰<span>{{ mostrarBoletas == true ? precioBoleta : "" }}</span>
+                        💰<span>{{ mostrarBoletas == true ? formatearNumero(precioBoleta) : '' }}</span>
                     </p>
                     <p>
                         🏦<span>{{ mostrarBoletas == true ? tipoLoteria : "" }}</span>
