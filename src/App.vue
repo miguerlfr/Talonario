@@ -695,10 +695,16 @@ main {
     /* Agregar barra de desplazamiento vertical si el contenido es demasiado largo */
 }
 
+#infoContenido p {
+    display: flex;
+    flex-direction: row;
+}
+
 #infoContenido span {
     color: #333;
     /* Cambia este color al que desees */
     padding-left: 3px;
+    padding-right: 20px;
 }
 
 #informacion button {
