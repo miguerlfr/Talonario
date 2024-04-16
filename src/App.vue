@@ -16,11 +16,11 @@ let boletas = ref([]);
 let clientes = ref([]);
 
 // Fechas
-let fechaDate = ref(null)
+let fechaDate = ref(null);
 let hoy = new Date();
 hoy.setHours(0, 0, 0, 0);
 
-// Mostrar 
+// Mostrar
 let mostrarFormulario = ref(true);
 let mostrarBoletas = ref(false);
 let mostrarRegistroDatosDeBoleta = ref(false);
@@ -34,11 +34,13 @@ let premio = ref("");
 let precioBoleta = ref("");
 let tipoLoteria = ref("");
 let fechaSorteo = ref("");
+let actualizarB = ref(false);
 
 // Estados de Boleta
 let boletaReservada = ref(false);
 let boletaDisponible = ref(false);
 let boletaComprada = ref(false);
+let boletaGanada = ref(false);
 
 // Item e Índice del array Boletas de las boletas
 let element = ref(null);
@@ -51,27 +53,27 @@ let direccionCliente = ref("");
 let pagarCliente = ref("");
 
 // Item del cliente
-let participante = ref(null);
-    
-// Funciones Lógicas
+let p = ref(null);
+
+// Lógica de Boleta Ganadora
+const mostrarGanador = ref(false);
+const boletaGanadora = ref("");
+const estadoGanaste = ref(false);
+const botonDeshabilitado = ref(false);
+
 function formatearNumero(numero) {
     return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
-function editar() {
+// Funciones Lógicas
+function editarparticipantes() {
     mostrarFormulario.value = true;
     mostrarBoletas.value = false;
 }
-
 function formular() {
     fechaDate = new Date(fechaSorteo.value + "T00:00:00");
 
-    if (
-        premio.value == "" &&
-        precioBoleta.value == "" &&
-        tipoLoteria.value == "" &&
-        fechaSorteo.value == ""
-    ) {
+    if (premio.value == "" && precioBoleta.value == "" && tipoLoteria.value == "" && fechaSorteo.value == "") {
         Swal.fire({
             text: "Los datos están vacíos",
             icon: "error",
@@ -106,7 +108,7 @@ function formular() {
             text: "Ingrese la fecha final",
             icon: "error",
         });
-    } else if (fechaDate <= hoy) {
+    } else if (fechaDate < hoy) {
         Swal.fire({
             text: "Ingrese una fecha final válida",
             icon: "warning",
@@ -129,14 +131,8 @@ function formular() {
         console.log(boletas.value);
     }
 }
-
 function adquirir() {
-    if (
-        nombreCliente.value == "" ||
-        telefonoCliente.value == "" ||
-        direccionCliente.value == "" ||
-        pagarCliente.value == ""
-    ) {
+    if (nombreCliente.value == "" || telefonoCliente.value == "" || direccionCliente.value == "" || pagarCliente.value == "") {
         Swal.fire({
             text: "Los datos están vacíos",
             icon: "error",
@@ -159,7 +155,7 @@ function adquirir() {
             boletas: [index],
             indice: index,
         });
-        boletas.value[index].estado = 'Reservado';
+        boletas.value[index].estado = "Reservado";
 
         nombreCliente.value = "";
         telefonoCliente.value = "";
@@ -167,7 +163,6 @@ function adquirir() {
         pagarCliente.value = "";
         mostrarRegistroDatosDeBoleta.value = false;
         boletaDisponible.value = false;
-
     } else if (pagarCliente.value == "si") {
         Swal.fire({
             text: "¡Gracias por comprar la boleta!",
@@ -181,7 +176,7 @@ function adquirir() {
             boletas: [index],
             indice: index,
         });
-        boletas.value[index].estado = 'Comprado';
+        boletas.value[index].estado = "Comprado";
 
         nombreCliente.value = "";
         telefonoCliente.value = "";
@@ -191,7 +186,6 @@ function adquirir() {
         boletaDisponible.value = false;
     }
 }
-
 function color(objeto) {
     switch (objeto) {
         case "Disponible":
@@ -200,21 +194,20 @@ function color(objeto) {
             return { backgroundColor: "red", color: "white" };
         case "Comprado":
             return { backgroundColor: "blue", color: "white" };
+        case "Ganador":
+            return { backgroundColor: "green", color: "white" };
     }
 }
-
 const verDatosParticipante = () => {
-    participante.value = clientes.value.find(cliente => cliente.boletas.includes(index));
+    p.value = clientes.value.find((cliente) => cliente.boletas.includes(index));
     datosParticipanteVisible.value = true;
     boletaComprada.value = false;
     boletaReservada.value = false;
 };
-
 function formulario() {
     mostrarRegistroDatosDeBoleta.value = true;
     boletaDisponible.value = false;
 }
-
 const BotonCerrar = () => {
     switch (true) {
         case mostrarPerzonalicacion.value === true:
@@ -232,22 +225,31 @@ const BotonCerrar = () => {
         case boletaDisponible.value === true:
             boletaDisponible.value = false;
             break;
+        case boletaComprada.value === true:
+            boletaComprada.value = false;
+            break;
+        case boletaGanada.value === true:
+            boletaGanada.value = false;
+            break
+        case mostrarGanador.value === true:
+            mostrarGanador.value = false;
+            break;
+        case estadoGanaste.value === true:
+            estadoGanaste.value = false;
+            break;
     }
 };
-
 function volver() {
     datosParticipanteVisible.value = false;
     boletaComprada.value = false;
     boletaReservada.value = false;
 
-    if (element.estado === 'Reservado') {
+    if (element.estado === "Reservado") {
         boletaReservada.value = true;
-
-    } else if (element.estado === 'Comprado') {
+    } else if (element.estado === "Comprado") {
         boletaComprada.value = true;
     }
 }
-
 function liberar() {
     // Verificar si la boleta está actualmente reservada o comprada
     if (boletas.value[index].estado === "Reservado" || boletas.value[index].estado === "Comprado") {
@@ -255,14 +257,10 @@ function liberar() {
         boletaComprada.value = false;
 
         // Encontrar el índice del cliente que tiene esta boleta
-        let clienteIndex = clientes.value.findIndex(
-            (cliente) => cliente.boletas.includes(index)
-        );
+        let clienteIndex = clientes.value.findIndex((cliente) => cliente.boletas.includes(index));
         // Eliminar la boleta de la lista de boletas del cliente
         if (clienteIndex !== -1) {
-            clientes.value[clienteIndex].boletas = clientes.value[clienteIndex].boletas.filter(
-                (boletaIndex) => boletaIndex !== index
-            );
+            clientes.value[clienteIndex].boletas = clientes.value[clienteIndex].boletas.filter((boletaIndex) => boletaIndex !== index);
             // Verificar si el cliente ya no tiene más boletas, luego eliminar al cliente
             if (clientes.value[clienteIndex].boletas.length === 0) {
                 clientes.value.splice(clienteIndex, 1);
@@ -270,58 +268,137 @@ function liberar() {
         }
 
         // Restablecer el valor del participante
-        participante.value = null;
+        p.value = null;
     }
     // Actualizar el estado de la boleta a 'Disponible'
-    boletas.value[index].estado = 'Disponible';
+    boletas.value[index].estado = "Disponible";
 
     Swal.fire({
         text: "¡Boleta liberada exitosamente!",
         icon: "success",
     });
 }
-
 function marcarPagado() {
     boletaReservada.value = false;
-    boletas.value[index].estado = 'Comprado';
+    boletas.value[index].estado = "Comprado";
 
     // Encuentra al participante al que pertenece la boleta
-    const participanteIndex = clientes.value.findIndex
-        (cliente => cliente.boletas.includes(index));
+    const participanteIndex = clientes.value.findIndex((cliente) => cliente.boletas.includes(index));
     // Actualiza el estado de la boleta en los datos del participante
 
     if (participanteIndex !== -1) {
-        clientes.value[participanteIndex].pagar = 'si'; // Actualiza el estado del participante a "Comprada"
+        clientes.value[participanteIndex].pagar = "si"; // Actualiza el estado del participante a "Comprada"
     }
     Swal.fire({
         text: "¡Boleta marcada como pagada exitosamente!",
-        icon: "success"
+        icon: "success",
     });
 }
-
 const pdf = () => {
     const doc = new jsPDF();
     doc.setFontSize(12);
     doc.text("Resumen de boletas vendidas", 10, 10);
     const filteredBoletas = clientes.value.filter((boleta) => !boleta.deleted);
 
-    const tableData = filteredBoletas.map((boleta, index) => [
-        boleta.indice,
-        boleta.nombre,
-        boleta.telefono,
-        boleta.direccion,
-        boleta.pagar,
-    ]);
+    const tableData = filteredBoletas.map((boleta, index) => [boleta.indice, boleta.nombre, boleta.telefono, boleta.direccion, boleta.pagar]);
 
     doc.autoTable({
         head: [["Boleta", "Nombre", "Teléfono", "Dirección", "Pago"]],
         body: tableData,
         startY: 20,
     });
-    const totalBoletas = filteredBoletas.length; // Update this line
+
+    const totalBoletas = filteredBoletas.length;
+    const totalPrecioBoletas = filteredBoletas.filter((boleta) => boleta.pagar === "si").length * precioBoleta.value;
+    const totalPrecioFaltanteBoletasReservadas = filteredBoletas.filter((boleta) => boleta.pagar === "no").length * precioBoleta.value;
+
     doc.text(`Total de boletas compradas: ${totalBoletas}`, 10, doc.autoTable.previous.finalY + 10);
+    doc.text(`Total del precio de las boletas compradas: ${formatearNumero(totalPrecioBoletas)}`, 10, doc.autoTable.previous.finalY + 20);
+    doc.text(`Total del precio faltante de las boletas reservadas: ${formatearNumero(totalPrecioFaltanteBoletasReservadas)}`, 10, doc.autoTable.previous.finalY + 30);
     doc.save("vendidas.pdf");
 };
+
+function editarparticipante() {
+    console.log('hola');
+    
+    actualizarB.value = true;
+    mostrarRegistroDatosDeBoleta.value = true;
+    mostrarFondo.value = true;
+    p = clientes.value.find((c) => c.indice == index);
+    console.log(p, index.value);
+    nombreCliente.value = p.nombre;
+    telefonoCliente.value = p.telefono;
+    direccionCliente.value = p.direccion;
+    pagarCliente.value = p.pagar;
+}
+
+function actualizarpartipante() {
+    if (nombreCliente.value == "" || telefonoCliente.value == "" || direccionCliente.value == "" || pagarCliente.value == "") {
+        Swal.fire({
+            text: "Los datos están vacíos",
+            icon: "error",
+        });
+    } else if (isNaN(telefonoCliente.value)) {
+        Swal.fire({
+            text: "Solo números en telefono",
+            icon: "warning",
+        });
+    } else if (pagarCliente.value == "no") {
+        Swal.fire({
+            text: "¡Gracias por reservar una boleta!",
+            icon: "success",
+        });
+
+        clientes.value.find((cliente) => {
+            if (cliente.indice === index) {
+                cliente.nombre = nombreCliente.value;
+                cliente.telefono = telefonoCliente.value;
+                cliente.direccion = direccionCliente.value;
+                cliente.pagar = pagarCliente.value;
+            }
+        });
+
+        boletas.value[index].estado = "Reservado";
+        actualizarB.value = false;
+        mostrarRegistroDatosDeBoleta.value = false;
+        mostrarFondo.value = false;
+        boletaDisponible.value = false;
+
+        editarBalota(element.value, index);
+
+        nombreCliente = ref("");
+        telefonoCliente = ref("");
+        direccionCliente = ref("");
+        pagarCliente = ref("");
+    } else if (pagarCliente.value == "si") {
+        Swal.fire({
+            text: "¡La boleta ah sido actualizada!",
+            icon: "success",
+        });
+
+        clientes.value.find((cliente) => {
+            if (cliente.indice === index) {
+                cliente.nombre = nombreCliente.value;
+                cliente.telefono = telefonoCliente.value;
+                cliente.direccion = direccionCliente.value;
+                cliente.pagar = pagarCliente.value;
+            }
+        });
+
+        boletas.value[index].estado = "Comprado";
+        actualizarB.value = false;
+        mostrarRegistroDatosDeBoleta.value = false;
+        mostrarFondo.value = false;
+        boletaDisponible.value = false;
+
+        editarBalota(element.value, index);
+
+        nombreCliente.value = "";
+        telefonoCliente.value = "";
+        direccionCliente.value = "";
+        pagarCliente.value = "";
+    }
+}
 
 function mostrarListadoDeBoletas() {
     mostrarListadoBoletas.value = true;
@@ -333,12 +410,12 @@ function mostrarPerzonalizar() {
     mostrarPerzonalicacion.value = true;
     mostrarFondo.value = true;
 }
-
 function editarBalota(elemento, indice) {
     // Ocultar todos los desplegables
     boletaReservada.value = false;
     boletaDisponible.value = false;
     boletaComprada.value = false;
+    boletaGanada.value = false;
     datosParticipanteVisible.value = false;
     mostrarRegistroDatosDeBoleta.value = false;
     nombreCliente.value = "";
@@ -357,6 +434,8 @@ function editarBalota(elemento, indice) {
         case "Comprado":
             boletaComprada.value = true;
             break;
+        case "Ganador":
+            boletaGanada.value = true;
     }
     element = elemento;
     index = indice;
@@ -366,7 +445,7 @@ const agruparBoletasCompradas = () => {
 
     // Agrupar boletas por nombre, teléfono y dirección
     clientes.value.forEach((cliente) => {
-        const clave = `${cliente.nombre}_${cliente.telefono}_${cliente.direccion}`;
+        const clave = "${cliente.nombre}${cliente.telefono}${cliente.direccion}";
         if (!clientesAgrupados[clave]) {
             clientesAgrupados[clave] = { ...cliente, boletas: [cliente.boletas[0]] };
         } else {
@@ -375,10 +454,43 @@ const agruparBoletasCompradas = () => {
     });
 
     return Object.values(clientesAgrupados);
+};
+function estadoGanador() {
+    mostrarGanador.value = true;
+}
+function botonGanador() {
+    mostrarGanador.value = false;
+    estadoGanaste.value = true;
+    botonDeshabilitado.value = true; // Deshabilita el botón después de hacer clic
+
+    // Convierte boletaGanadora a número antes de comparar
+    const boletaGanadoraNumero = parseInt(boletaGanadora.value);
+
+    // Itera sobre todas las boletas
+    boletas.value.forEach((e, index) => {
+        // Comprueba si el número de boleta actual coincide con boletaGanadora
+        if (e.i === boletaGanadoraNumero) {
+            // Establece el estado de la boleta como "Ganador"
+            boletas.value[index].estado = "Ganador";
+        }
+    });
 }
 </script>
 
 <template>
+    <div v-if="mostrarGanador" class="divGanador">
+        <button @click="BotonCerrar" class="cerrarBtn">x</button>
+        <h3>¿Cuál será la boleta ganadora?</h3>
+        La boleta ganadora es:
+        <input type="number" v-model="boletaGanadora" />
+        <button class="buttonGanador" @click="botonGanador">Aceptar</button>
+    </div>
+    <div v-if="estadoGanaste" class="divGanaste">
+        <button @click="BotonCerrar" class="cerrarBtn">x</button>
+        <h3>Felicidades</h3>
+        <h3>La boleta {{ boletaGanadora }} es la ganadora del premio de:</h3>
+        <h3>Premio: &nbsp;{{ formatearNumero(premio) }}</h3>
+    </div>
     <div id="all" :style="{ backgroundColor: colorFondo }">
         <div id="header" :style="{ backgroundColor: colorPagina }">
             <h1>TALONARIO</h1>
@@ -408,17 +520,19 @@ const agruparBoletasCompradas = () => {
             <button @click="volver()" class="cerrarBtnVolver">⮌</button>
             <h3>
                 Boleta
-                <span>{{ participante.indice > 10 ? participante.indice : '0' + participante.indice }}</span>
+                <span>{{ p.indice > 10 ? p.indice : "0" + p.indice }}</span>
             </h3>
             <p>
                 Estado:
-                <span>{{ participante.pagar === 'si' ? 'Comprada 🔵' : 'Reservada 🔴' }}</span>
+                <span>{{ p.pagar === "si" ? "Comprada 🔵" : "Reservada 🔴" }}</span>
             </p>
             <div>
-                <p><strong>Nombre:</strong> {{ participante.nombre }}</p>
-                <p><strong>Teléfono:</strong> {{ participante.telefono }}</p>
-                <p><strong>Dirección:</strong> {{ participante.direccion }}</p>
+                <p><strong>Nombre:</strong> {{ p.nombre }}</p>
+                <p><strong>Teléfono:</strong> {{ p.telefono }}</p>
+                <p><strong>Dirección:</strong> {{ p.direccion }}</p>
             </div>
+
+            <button @click="editarparticipante()">editar datos</button>
         </div>
         <!-- Desplegable boleta comprada -->
         <div id="boletaDesplegableComprada" v-if="boletaComprada == true" :style="{ backgroundColor: boletaComprada }">
@@ -448,15 +562,25 @@ const agruparBoletasCompradas = () => {
                 <button @click="formulario()">🤝 Adquirir Boleta</button>
             </div>
         </div>
+        <!-- Desplegable boleta Ganada -->
+        <div id="boletaDesplegableGanada" v-if="boletaGanada == true">
+            <button @click="BotonCerrar" class="cerrarBtn">x</button>
+            <h3>
+                Boleta
+                <span>{{ element.i > 10 ? element.i : "0" + element.i }}</span>
+            </h3>
+            <p>¡ FELICIDADES ERES EL GANADOR !</p>
+            <p>Estado: <span>Ganador 🟢</span></p>
+        </div>
         <main>
             <section id="informacion">
                 <h2 style="color: white">INFORMACIÓN</h2>
                 <div id="infoContenido">
                     <p>
-                        🏆<span>{{ mostrarBoletas == true ? formatearNumero(premio) : '' }}</span>
+                        🏆<span>{{ mostrarBoletas == true ? formatearNumero(premio) : "" }}</span>
                     </p>
                     <p>
-                        💰<span>{{ mostrarBoletas == true ? formatearNumero(precioBoleta) : '' }}</span>
+                        💰<span>{{ mostrarBoletas == true ? formatearNumero(precioBoleta) : "" }}</span>
                     </p>
                     <p>
                         🏦<span>{{ mostrarBoletas == true ? tipoLoteria : "" }}</span>
@@ -469,7 +593,8 @@ const agruparBoletasCompradas = () => {
             </section>
             <section id="loteria">
                 <button v-for="(e, i) in boletas" :key="i" @click="editarBalota(e, i)" :style="color(e.estado)">
-                    {{ e.i < 10 ? "0" + e.i : e.i }} </button>
+                    {{ e.i < 10 ? "0" + e.i : e.i }}
+                </button>
             </section>
             <section id="formulario" v-if="mostrarFormulario == true">
                 <h2 style="color: white">CONFIGURA TU TALONARIO</h2>
@@ -495,18 +620,16 @@ const agruparBoletasCompradas = () => {
             <section id="accion">
                 <h2 style="color: white">ACCIONES</h2>
                 <div id="accContenido">
-                    <button id="estadoB">ESTADO</button>
-                    <button @click="mostrarListadoDeBoletas">LISTAR BOLETAS</button>
-                    <button @click="mostrarPerzonalizar()">PERSONALIZAR
-                        TALONARIO WEB</button>
-                    <button @click="pdf()">GENERAR ARCHIVO DE
-                        DATOS</button>
+                    <button :disabled="botonDeshabilitado" @click="estadoGanador" id="estadoB">ESTADO GANADOR</button>
+                    <button @click="mostrarListadoDeBoletas()">LISTAR BOLETAS</button>
+                    <button @click="mostrarPerzonalizar()">PERSONALIZAR TALONARIO WEB</button>
+                    <button @click="pdf()">GENERAR ARCHIVO DE DATOS</button>
                 </div>
             </section>
             <section v-if="mostrarListadoBoletas" class="listado-boletas">
                 <h2>&nbsp;&nbsp;&nbsp;&nbsp;LISTADO DE BOLETAS</h2>
                 <div class="papaCard">
-                    <div class="card" v-for="(cliente, index) in agruparBoletasCompradas()" :key="cliente.telefono">
+                    <div class="card" v-for="(cliente, index) in agruparBoletasCompradas()" :key="index">
                         <p>Nombre</p>
                         <p class="textoListar">{{ cliente.nombre }}</p>
                         <p>Telefono</p>
@@ -514,7 +637,7 @@ const agruparBoletasCompradas = () => {
                         <p>Direccion</p>
                         <p class="textoListar">{{ cliente.direccion }}</p>
                         <p>Boletas</p>
-                        <p>{{ cliente.boletas.join(' - ') }}</p>
+                        <p>{{ cliente.boletas.join(" - ") }}</p>
                     </div>
                 </div>
                 <div class="lin"></div>
@@ -541,30 +664,20 @@ const agruparBoletasCompradas = () => {
                         No
                     </label>
                 </div>
-                <button class="adquirir" @click="adquirir()">ADQUIRIR</button>
+                <button class="adquirir" @click="adquirir()" v-if="actualizarB == false">ADQUIRIR</button>
+                <button class="adquirir" @click="actualizarpartipante()" v-else>actualizar</button>
             </section>
 
             <div id="paletasDeColores" v-if="mostrarPerzonalicacion == true">
-                <h2 :style="{ margin: 0 }">
-                    &nbsp;&nbsp;PALETAS DE COLORES<button @click="BotonCerrar">x</button>
-                </h2>
+                <h2 :style="{ margin: 0 }">&nbsp;&nbsp;PALETAS DE COLORES<button @click="BotonCerrar">x</button></h2>
                 <section>
                     <article>
                         <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
-                        <svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
-                            stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z"
-                                :fill="colorFondo" />
-                            <path opacity="0.4"
-                                d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z"
-                                fill="#292D32" />
-                            <path
-                                d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z"
-                                :fill="colorFondo" />
-                            <path
-                                d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z"
-                                :fill="colorFondo" />
+                        <svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z" :fill="colorFondo" />
+                            <path opacity="0.4" d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z" fill="#292D32" />
+                            <path d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z" :fill="colorFondo" />
+                            <path d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z" :fill="colorFondo" />
                         </svg>
                         <div>
                             <p>Color fondo</p>
@@ -572,20 +685,11 @@ const agruparBoletasCompradas = () => {
                         </div>
                     </article>
                     <article>
-                        <svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
-                            stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z"
-                                :fill="ColorBdisponible" />
-                            <path opacity="0.4"
-                                d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z"
-                                fill="#292D32" />
-                            <path
-                                d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z"
-                                :fill="ColorBdisponible" />
-                            <path
-                                d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z"
-                                :fill="ColorBdisponible" />
+                        <svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z" :fill="ColorBdisponible" />
+                            <path opacity="0.4" d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z" fill="#292D32" />
+                            <path d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z" :fill="ColorBdisponible" />
+                            <path d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z" :fill="ColorBdisponible" />
                         </svg>
                         <div>
                             <p>Color Boletas Disponibles</p>
@@ -593,20 +697,11 @@ const agruparBoletasCompradas = () => {
                         </div>
                     </article>
                     <article id="final2">
-                        <svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000"
-                            stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z"
-                                :fill="colorPagina" />
-                            <path opacity="0.4"
-                                d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z"
-                                fill="#292D32" />
-                            <path
-                                d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z"
-                                :fill="colorPagina" />
-                            <path
-                                d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z"
-                                :fill="colorPagina" />
+                        <svg width="100px" height="100px" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="0.500" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.3108 11.25C17.3308 11.51 17.2408 11.78 17.0408 11.98L11.0208 18C9.69083 19.33 8.35083 19.33 7.01083 18L3.00083 13.99C2.32083 13.3 1.98083 12.61 2.00083 11.92H2.07083L17.1908 11.26L17.3108 11.25Z" :fill="colorPagina" />
+                            <path opacity="0.4" d="M17.04 10.6402L9.69 3.29013L8.82 2.42014C8.53 2.13014 8.05 2.13014 7.76 2.42014C7.47 2.71014 7.47 3.19013 7.76 3.48013L8.63 4.35013L3 9.98013C2.36 10.6201 2.02 11.2701 2 11.9201H2.07L17.19 11.2602L17.31 11.2502C17.3 11.0302 17.2 10.8002 17.04 10.6402Z" fill="#292D32" />
+                            <path d="M16 22.75H3C2.59 22.75 2.25 22.41 2.25 22C2.25 21.59 2.59 21.25 3 21.25H16C16.41 21.25 16.75 21.59 16.75 22C16.75 22.41 16.41 22.75 16 22.75Z" :fill="colorPagina" />
+                            <path d="M19.35 14.7798C19.09 14.4998 18.61 14.4998 18.35 14.7798C18.04 15.1198 16.5 16.8598 16.5 18.1698C16.5 19.4698 17.55 20.5198 18.85 20.5198C20.15 20.5198 21.2 19.4698 21.2 18.1698C21.2 16.8598 19.66 15.1198 19.35 14.7798Z" :fill="colorPagina" />
                         </svg>
                         <div>
                             <p>Color De La Pagina</p>
@@ -620,6 +715,67 @@ const agruparBoletasCompradas = () => {
 </template>
 
 <style scoped>
+.divGanaste {
+    z-index: 99;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-inline: 20px;
+    background-color: white;
+    color: black;
+    align-items: center;
+    border: 1px solid red;
+    font-weight: 600;
+    font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+}
+
+.divGanaste h3 {
+    margin: 0;
+}
+
+.buttonGanador {
+    background-color: red;
+    color: white;
+}
+
+.divGanador {
+    z-index: 99;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    padding-inline: 40px;
+    background-color: white;
+    color: black;
+    align-items: center;
+    border: 1px solid red;
+    padding-bottom: 15px;
+}
+
+.divGanador input {
+    background-color: #333;
+    width: 25px;
+    color: white;
+    padding-left: 5px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.divGanador p {
+    color: red;
+    font-weight: 600;
+}
+
 #all {
     width: 100%;
     position: absolute;
@@ -850,7 +1006,7 @@ main {
     position: relative;
     bottom: 12.2px;
     font-weight: 400;
-    font-size: 20px
+    font-size: 20px;
 }
 
 #forContenido {
@@ -912,7 +1068,7 @@ main {
 
 #loteria {
     min-width: min-content;
-    max-width: 120vh;
+    max-width: 100rem;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -920,6 +1076,7 @@ main {
     overflow-y: auto;
     max-height: 60vh;
     margin-top: 2.3%;
+    width: 47rem;
 }
 
 ::-webkit-scrollbar {
@@ -1107,6 +1264,27 @@ main {
     text-align: left;
 }
 
+#boletaDesplegableGanada {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    color: black;
+    width: 18rem;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%);
+    z-index: 999;
+}
+
+#boletaDesplegableGanada h3 {
+    margin: 9px 0 15px 0;
+}
+
+#boletaDesplegableGanada p {
+    margin: 0px 0 9px 0;
+}
+
 .listado-boletas {
     position: fixed;
     top: 50%;
@@ -1116,8 +1294,7 @@ main {
     box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
     z-index: 999;
     color: black;
-    min-width: 30rem;
-    max-width: 61rem;
+    width: 10rem;
     max-height: 30rem;
     overflow-y: auto;
 }
