@@ -213,9 +213,6 @@ const BotonCerrar = () => {
         case mostrarPerzonalicacion.value === true:
             mostrarPerzonalicacion.value = false;
             break;
-        case mostrarRegistroDatosDeBoleta.value === true:
-            mostrarRegistroDatosDeBoleta.value = false;
-            break;
         case boletaComprada.value === true:
             boletaComprada.value = false;
             break;
@@ -236,6 +233,9 @@ const BotonCerrar = () => {
             break;
         case estadoGanaste.value === true:
             estadoGanaste.value = false;
+            break;
+        case mostrarRegistroDatosDeBoleta.value === true:
+            mostrarRegistroDatosDeBoleta.value = false;
             break;
     }
 };
@@ -320,9 +320,8 @@ const pdf = () => {
 
 function editarparticipante() {
     console.log('hola');
-    
+    datosParticipanteVisible.value = false;
     actualizarB.value = true;
-    mostrarRegistroDatosDeBoleta.value = true;
     mostrarFondo.value = true;
     p = clientes.value.find((c) => c.indice == index);
     console.log(p, index.value);
@@ -330,6 +329,7 @@ function editarparticipante() {
     telefonoCliente.value = p.telefono;
     direccionCliente.value = p.direccion;
     pagarCliente.value = p.pagar;
+    mostrarRegistroDatosDeBoleta.value = true;
 }
 
 function actualizarpartipante() {
@@ -643,8 +643,8 @@ function botonGanador() {
                 <div class="lin"></div>
                 <button class="cerrarr" @click="cerrarListadoBoletas">Cerrar</button>
             </section>
-            <section id="formularioBD" v-if="mostrarRegistroDatosDeBoleta == true">
-                <button @click="BotonCerrar" class="cerrar">x</button>
+            <section id="formularioBD" v-if="mostrarRegistroDatosDeBoleta">
+                <button @click="BotonCerrar" class="cerrarrrr">x</button>
                 <h2>DILIGENCIA LA INFORMACION</h2>
                 <p>
                     Boleta a Adquirir:
@@ -1184,7 +1184,7 @@ main {
     width: 2px;
 }
 
-.cerrar {
+.cerrarrrr {
     margin: 0;
     position: absolute;
     top: -30.5px;
